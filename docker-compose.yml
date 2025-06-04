@@ -1,0 +1,53 @@
+version: '3.8'
+services:
+  postgres_airflow:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow_db
+    volumes:
+      - postgres_airflow_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U airflow" ]
+      interval: 10s
+      retries: 5
+
+
+
+  airflow:
+    build: ./airflow
+    image: airflow_telegram_7.2.3
+    restart: always
+    depends_on:
+      postgres_airflow:
+        condition: service_healthy
+    environment:
+      &airflow-env
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres_airflow/airflow_db
+      AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+      AIRFLOW__CORE__PLUGINS_FOLDER: /opt/airflow/plugins
+      AIRFLOW__CORE__DAGS_FOLDER: /opt/airflow/dags
+      AIRFLOW__ENV_FILE_PATH: /opt/airflow/.env
+
+      #entrpoint
+      POSTGRES_HOST: postgres_airflow
+      POSTGRES_PORT: 5432
+    volumes:
+      - ./reports:/opt/airflow/reports
+      - ./dags:/opt/airflow/dags
+      - ./plugins:/opt/airflow/plugins
+      - ./logs:/opt/airflow/logs
+      - ./.env:/opt/airflow/.env
+    ports:
+      - "8080:8080"
+
+    healthcheck:
+      test: [ "CMD", "curl", "--fail", "http://localhost:8080/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 2
+
+volumes:
+  postgres_airflow_data:
