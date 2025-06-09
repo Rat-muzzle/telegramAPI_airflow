@@ -54,7 +54,7 @@
 - Docker Engine 20.10+
 - Docker Compose 2.0+
 - Telegram Bot Token от [@BotFather](https://t.me/BotFather)
-- Chat ID (получите через @userinfobot)
+- Chat ID ([получите через](https://github.com/Rat-muzzle/get_aiogram_chat_id))
 - python 3.11
 ### 1. Клонируйте репозиторий
 ```bash
